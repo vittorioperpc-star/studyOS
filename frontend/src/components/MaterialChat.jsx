@@ -38,7 +38,7 @@ export default function MaterialChat({ materialId }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 h-12 px-4 rounded-full bg-black text-white shadow-lg hover:scale-105 active:scale-95 transition flex items-center gap-2 z-30"
+        className="fixed bottom-24 left-6 sm:left-auto sm:right-44 h-12 px-4 rounded-full bg-black text-white shadow-lg hover:scale-105 active:scale-95 transition flex items-center gap-2 z-30"
         data-testid="open-chat-btn"
       >
         <Sparkles className="h-4 w-4" /> Chiedi all'AI

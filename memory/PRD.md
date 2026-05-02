@@ -1,49 +1,45 @@
 # StudyOS — Product Requirements
 
-## Original problem
-SaaS per studenti (scuole superiori e università) che trasforma materiali di studio (PDF, foto di appunti) in contenuti AI (riassunti, schemi, flashcard, quiz, domande d'esame), con modalità studio attivo (spaced repetition), piano di studio automatico, tracking progresso, free/premium.
-
 ## Stack
-- FastAPI + MongoDB (motor)
-- React 19 + Tailwind + shadcn/ui + recharts
+- FastAPI + MongoDB · React 19 + Tailwind + shadcn/ui + recharts
 - AI: Claude Sonnet 4.5 via emergentintegrations (Emergent LLM Key)
-- OCR: Claude vision
-- Auth: JWT email/password + Emergent Google OAuth
-- Storage: Emergent Object Storage
-- Billing: **PayPal LIVE** (Smart Buttons via @paypal/react-paypal-js)
+- OCR: Claude vision · Auth: JWT + Emergent Google OAuth
+- Storage: Emergent Object Storage · Billing: PayPal LIVE
 - Notifications: in-app + Web Push (VAPID)
 
 ## Implemented (2026-05)
 ### Phase 1 — MVP
-- Landing, Login, Signup, Pricing pages
-- Auth (JWT + Google OAuth)
-- Upload PDF / image / pasted text → OCR + content generation
-- Materials CRUD, Library, Material view with tabs (Summary, Schema, Flashcards, Quiz, Exam Qs)
-- Flashcard spaced repetition (SM-2)
-- Quiz interactive + results saved
-- Study Plan auto-calendar (study + review days, toggle done)
-- Stats overview with 7-day activity chart
-- Free plan limit: 3 uploads/day
+- Landing/Login/Signup/Pricing, JWT + Google OAuth
+- Upload PDF/image/text → AI generation
+- Materials CRUD, viewer (Summary/Schema/Flashcards/Quiz/Exam)
+- Flashcard SM-2, Quiz with results saved
+- Study Plan auto-calendar, Stats dashboard
 
 ### Phase 2 — Engagement & Monetization
-- **AI Chat per materiale** (drawer chat con history persistente, Claude Sonnet 4.5)
-- **Notifications Bell** (in-app, popover, polling 60s, segna come letto, "Attiva push")
-- **Web Push notifications** (Service Worker `/sw.js`, VAPID auto-generated, subscription persistente)
-- **PayPal Smart Buttons** in Pricing — €4,99 / 30 giorni
-- Auto-generate daily study reminder notifications (idempotent) per ogni piano attivo
-- `premium_until` su user; auto-downgrade alla scadenza; PayPal capture idempotente
+- AI Chat per materiale (Claude Sonnet 4.5, history)
+- In-app notifications + Web Push (VAPID + service worker)
+- PayPal Smart Buttons LIVE — €4,99/30 giorni
+- `premium_until` + auto-downgrade
+
+### Phase 3 — Brand, UX & Premium gates
+- New brain+book purple/blue logo (LogoMark/LogoFull/LogoIcon)
+- Beautified Landing (gradients, testimonials, 4-step section)
+- First-visit Onboarding modal (5 steps)
+- General Support Chat (LifeBuoy floating button, KB-aware)
+- Real Premium gates: 3 uploads/day, 10 AI chat msgs/day, 1 study plan
+- Dashboard limits card with progress bars
+- `/api/me/limits` endpoint
 
 ## Deferred / Backlog
 - PayPal Subscriptions (rinnovo automatico)
-- PayPal webhook verification (currently relies on synchronous capture)
-- Email notifications (Resend/SendGrid) — opzionale
-- Export deck Anki / condivisione pubblica materiali
-- Streak counter & gamification (idea suggerita all'utente)
-- PWA / mobile app
+- Email notifications (Resend/SendGrid)
+- Streak counter / gamification
+- Export Anki / shared decks
+- PWA installabile
+
+## Known notes
+- PayPal credentials are LIVE (production). Use real with caution.
+- Emergent LLM key budget previously hit cap (0.4459/0.4); top-up via Profile → Universal Key.
 
 ## Test credentials
 See `/app/memory/test_credentials.md`
-
-## Known notes
-- PayPal credentials in /app/backend/.env are **LIVE** (not sandbox). Test capture only with PayPal sandbox accounts before pushing to real users.
-- Emergent LLM key budget hit a limit during dev (0.4459/0.4) — user can top-up via Profile → Universal Key.

@@ -38,7 +38,7 @@ export default function SupportChat() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 h-12 w-12 rounded-full bg-gradient-to-br from-blue-600 via-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/30 hover:scale-110 active:scale-95 transition flex items-center justify-center z-30"
+        className="fixed bottom-24 right-6 h-12 w-12 rounded-full bg-gradient-to-br from-blue-600 via-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/30 hover:scale-110 active:scale-95 transition flex items-center justify-center z-30"
         data-testid="open-support-btn"
         aria-label="Assistenza AI"
       >

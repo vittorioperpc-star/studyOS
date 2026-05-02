@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Upload, Brain, Calendar, MessageSquare, Sparkles } from "lucide-react";
 
@@ -59,6 +59,8 @@ export default function Onboarding() {
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) close(); }}>
       <DialogContent className="max-w-lg p-0 overflow-hidden border-0" data-testid="onboarding-modal">
+        <DialogTitle className="sr-only">Tutorial StudyOS</DialogTitle>
+        <DialogDescription className="sr-only">Scopri come usare StudyOS in 5 passi.</DialogDescription>
         <div className={`bg-gradient-to-br ${step.grad} text-white px-8 pt-10 pb-12 text-center`}>
           <div className="h-14 w-14 mx-auto rounded-2xl bg-white/20 backdrop-blur grid place-items-center">
             <step.icon className="h-7 w-7" strokeWidth={1.8} />
