@@ -1,0 +1,92 @@
+{
+  "theme": "light",
+  "archetype": "4 (Swiss & High-Contrast)",
+  "design_philosophy": "Notion-inspired minimalism. The UI must get out of the way of the content. High reliance on typography, whitespace, and structural grayscale. Color is used strictly for function or state.",
+  "typography": {
+    "heading_font": "Outfit",
+    "body_font": "IBM Plex Sans",
+    "font_install_instructions": "Add Google Fonts imports to index.css or load via Next.js/vite if applicable.",
+    "hierarchy": {
+      "h1": "text-4xl sm:text-5xl tracking-tight font-semibold text-slate-900",
+      "h2": "text-2xl sm:text-3xl tracking-tight font-medium text-slate-900",
+      "h3": "text-xl sm:text-2xl tracking-tight font-medium text-slate-900",
+      "body": "text-base leading-relaxed text-slate-700",
+      "small": "text-sm text-slate-500",
+      "label": "text-xs uppercase tracking-[0.2em] font-semibold text-slate-500"
+    }
+  },
+  "colors": {
+    "background": "#FFFFFF",
+    "sidebar_background": "#F7F7F5",
+    "surface": "#FFFFFF",
+    "primary_text": "#111827",
+    "secondary_text": "#4B5563",
+    "border": "#E5E7EB",
+    "primary_cta": "#0F0F0F",
+    "primary_cta_text": "#FFFFFF",
+    "accent_highlight": "#FEF08A",
+    "premium_accent": "#000000",
+    "success": "#10B981",
+    "danger": "#EF4444"
+  },
+  "layout": {
+    "spacing_system": "Generous inside documents (p-8, p-12), tighter in dashboard grids (gap-4, gap-6).",
+    "dashboard_grid": "Mode B (Control Room Grid). Base Grid: grid-cols-1 md:grid-cols-3 lg:grid-cols-4. Strict hierarchy.",
+    "bento_spans": "Summary metrics col-span-1. Main content col-span-2 or 3.",
+    "containers": "Flat. 1px border. max 8px border-radius (rounded-md). No drop shadows unless it's a floating menu/dialog."
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-black text-white hover:bg-black/90 rounded-md px-4 py-2 text-sm font-medium transition-colors shadow-none",
+      "ghost": "bg-transparent text-slate-700 hover:bg-slate-100 rounded-md px-4 py-2 text-sm transition-colors",
+      "outline": "border border-slate-200 bg-transparent text-slate-900 hover:bg-slate-50 rounded-md px-4 py-2 text-sm"
+    },
+    "cards": {
+      "default": "border border-slate-200 bg-white rounded-lg p-6 shadow-none",
+      "hover_state": "hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200"
+    },
+    "navigation": {
+      "sidebar": "w-64 fixed left-0 top-0 bottom-0 bg-[#F7F7F5] border-r border-slate-200 flex flex-col p-4",
+      "header": "sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/50 flex items-center px-6 h-14"
+    },
+    "inputs": {
+      "default": "border border-slate-200 rounded-md bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 transition-all placeholder:text-slate-400"
+    }
+  },
+  "motion": {
+    "page_transitions": "Subtle fade-in and slide-up (translate-y-2 opacity-0 to translate-y-0 opacity-100) using framer-motion.",
+    "hover_states": "Quick transitions (duration-150 ease-in-out).",
+    "micro_interactions": "Active states slightly scale down (active:scale-[0.98])."
+  },
+  "icons_and_media": {
+    "icon_library": "lucide-react",
+    "icon_style": "Minimalist, stroke-width 1.5, matching text color.",
+    "emoji_usage": "Encouraged for document icons, tags, and category headers (Notion style).",
+    "image_urls": {
+      "hero_study": {
+        "url": "https://images.pexels.com/photos/19314243/pexels-photo-19314243.jpeg",
+        "description": "Student wearing a hoodie writing notes at a wooden desk.",
+        "category": "landing_page_hero"
+      },
+      "empty_state": {
+        "url": "https://images.unsplash.com/photo-1760662156210-91d7bc703a0b",
+        "description": "People working at tables in a large room.",
+        "category": "library_empty_state_background"
+      }
+    }
+  },
+  "accessibility": {
+    "contrast": "Ensure all text meets WCAG AA standards. Use text-slate-700 or darker for body.",
+    "focus_rings": "Visible focus rings (focus:ring-2 focus:ring-slate-900/20) on all interactive elements.",
+    "test_ids": "All interactive elements MUST include data-testid attribute in kebab-case format based on role."
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow the color palette. Do not introduce generic blues or purples.",
+    "Use Shadcn UI components but strip away heavy shadows. Use border-slate-200 and shadow-none.",
+    "For the dashboard, implement a Notion-like sidebar using the sidebar_background color.",
+    "Use emojis as icons for user-created documents or categories to reinforce the Notion vibe.",
+    "Ensure the layout is highly responsive. On mobile, the sidebar should become a hamburger menu or bottom sheet.",
+    "Implement the 'Active Study' mode using a clean, focus-mode interface (hide unnecessary nav, center content).",
+    "The Pricing page should feel premium yet minimal—monochrome tier cards with a subtle black solid button for the Premium tier."
+  ]
+}
