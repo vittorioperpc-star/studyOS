@@ -8,6 +8,12 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const checkAuth = useCallback(async () => {
+    // Skip /auth/me when no token AND no session cookie likely set (public pages)
+    const hasToken = !!localStorage.getItem("studyos_token");
+    if (!hasToken && !document.cookie.includes("session_token")) {
+      setLoading(false);
+      return;
+    }
     try {
       const { data } = await api.get("/auth/me");
       setUser((u) => u || data);  // do not overwrite a just-logged-in user

@@ -83,7 +83,6 @@ export default function AppShell({ children }) {
           <span className="font-heading font-semibold">StudyOS</span>
         </div>
         <div className="flex items-center gap-1">
-          <NotificationsBell />
           <Button variant="ghost" size="icon" onClick={() => setOpen(true)} data-testid="open-mobile-menu">
             <Menu className="h-5 w-5" />
           </Button>
@@ -101,7 +100,7 @@ export default function AppShell({ children }) {
       )}
 
       <main className="md:pl-64 min-h-screen">
-        <div className="hidden md:flex items-center justify-end gap-2 sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-200/60 h-12 px-8">
+        <div className="flex items-center justify-end gap-2 sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-200/60 h-12 px-5 md:px-8">
           <NotificationsBell />
         </div>
         <div className="max-w-6xl mx-auto px-5 md:px-10 py-8 md:py-12 fade-in">

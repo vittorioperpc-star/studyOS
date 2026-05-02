@@ -310,6 +310,12 @@ async def capture_paypal_order(order_id: str, request: Request):
     if data.get("status") != "COMPLETED":
         raise HTTPException(status_code=402, detail=f"Pagamento non completato: {data.get('status')}")
 
+    # Idempotency: if we already processed this order, return current state
+    existing = await db.payments.find_one({"order_id": order_id, "status": "COMPLETED"}, {"_id": 0})
+    if existing:
+        u = await db.users.find_one({"user_id": user["user_id"]}, {"_id": 0})
+        return {"ok": True, "plan": u.get("plan"), "premium_until": u.get("premium_until"), "already_processed": True}
+
     # Activate premium for 30 days
     now = datetime.now(timezone.utc)
     current_until = None
