@@ -30,8 +30,8 @@ export default function Stats() {
       </div>
       <section className="border border-slate-200 rounded-xl bg-white p-6">
         <h2 className="font-heading text-lg font-medium mb-4">Attività ultimi 7 giorni</h2>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
+        <div style={{ width: "100%", height: 256, minHeight: 256 }}>
+          <ResponsiveContainer width="100%" height="100%" minWidth={200} minHeight={220}>
             <BarChart data={s.activity.map(a => ({ ...a, label: new Date(a.date).toLocaleDateString("it-IT", { weekday: "short", day: "numeric" }) }))}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
               <XAxis dataKey="label" stroke="#9CA3AF" fontSize={11} />

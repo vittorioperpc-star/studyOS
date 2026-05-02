@@ -23,11 +23,14 @@ export default function Dashboard() {
   const [openUpload, setOpenUpload] = useState(false);
 
   const load = async () => {
-    const [s, m] = await Promise.all([
-      api.get("/stats/overview"),
-      api.get("/materials"),
-    ]);
-    setStats(s.data); setMats(m.data);
+    try {
+      const s = await api.get("/stats/overview");
+      setStats(s.data);
+    } catch (e) { setStats({ materials: 0, quizzes_taken: 0, avg_score_pct: 0, flashcards_reviewed: 0, activity: [] }); }
+    try {
+      const m = await api.get("/materials");
+      setMats(m.data);
+    } catch (e) { setMats([]); }
   };
   useEffect(() => { load(); }, []);
 

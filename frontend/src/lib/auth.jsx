@@ -10,9 +10,9 @@ export function AuthProvider({ children }) {
   const checkAuth = useCallback(async () => {
     try {
       const { data } = await api.get("/auth/me");
-      setUser(data);
+      setUser((u) => u || data);  // do not overwrite a just-logged-in user
     } catch {
-      setUser(null);
+      setUser((u) => u || null);
     } finally {
       setLoading(false);
     }
@@ -31,6 +31,7 @@ export function AuthProvider({ children }) {
     const { data } = await api.post("/auth/login", { email, password });
     localStorage.setItem("studyos_token", data.token);
     setUser(data.user);
+    setLoading(false);
     return data.user;
   };
 
@@ -38,6 +39,7 @@ export function AuthProvider({ children }) {
     const { data } = await api.post("/auth/signup", { email, password, name });
     localStorage.setItem("studyos_token", data.token);
     setUser(data.user);
+    setLoading(false);
     return data.user;
   };
 
