@@ -1,0 +1,62 @@
+{
+  "summary": "Tested StudyOS v3 features: /api/me/limits, study-plan Free gate (402), support chat (POST + history), material chat 10/day gate guard, plus full frontend pass for new logo, onboarding modal, support chat drawer, Pricing copy updates, dashboard limits card, and material chat entry. 9/9 backend pytest passed. Frontend mostly green with ONE blocking UI bug.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "SupportChat",
+        "issue": "Floating LifeBuoy button at bottom-6 right-6 is covered by the 'Made with Emergent' badge anchor (id=emergent-badge) which intercepts pointer events. Playwright click was blocked even with force=True; user cannot reliably open the support drawer on any page where the badge is rendered. Re-position the button (e.g. bottom-20 right-6 or bottom-6 right-24) or raise it above the badge with a higher z-index AND offset so it is not occluded.",
+        "selector": "[data-testid=\"open-support-btn\"]",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "Onboarding modal",
+        "issues": [
+          "Console accessibility warnings: 'DialogContent requires a DialogTitle' and missing aria-describedby. Wrap the heading in shadcn DialogTitle (or VisuallyHidden) and add DialogDescription for screen-reader users."
+        ]
+      },
+      {
+        "screen": "Dashboard limits card",
+        "issues": [
+          "When usage exceeds free max (e.g. demo user has 3 study plans vs max 1), the bar correctly turns red and shows '3/1' — visual is fine, but consider adding a 'Limite superato' label or an inline upgrade link next to that bar for clarity."
+        ]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_studyos_v3.py",
+    "/app/test_reports/pytest/v3_results.xml"
+  ],
+  "action_items": [
+    "Fix SupportChat floating button overlap with Emergent badge — move it up (e.g. className 'fixed bottom-24 right-6 ...') so the user can actually click it. This is the only blocking issue.",
+    "Add DialogTitle (or VisuallyHidden DialogTitle) + DialogDescription inside Onboarding's DialogContent to silence Radix a11y errors.",
+    "Optional: surface a 'Sblocca' inline CTA next to any over-limit bar in the limits card."
+  ],
+  "critical_code_review_comments": [
+    "extras.py duplicates the daily-window query for uploads/chat in two places (check_upload_limit in server.py, /me/limits, and chat_with_material). Extract a small helper count_today(collection, user_id, extra_filter) to avoid drift if the date math changes.",
+    "Free study-plan gate counts ALL plans for a user (db.study_plans.count_documents({user_id})). It does NOT filter past/expired plans — a Free user who once had a plan whose exam_date is past is permanently locked out. Consider counting only plans where max(days[].date) >= today, or adding a DELETE path.",
+    "/api/me/limits exposes no rate-limiting — a malicious client could poll it. Low priority but worth a small cache header.",
+    "support_chat dumps full SUPPORT_KB system prompt every turn — fine, but if KB grows consider trimming.",
+    "Onboarding stores completion in localStorage only; if the user clears storage or signs in on another device they see the tutorial again. Acceptable for MVP.",
+    "Logo.jsx LogoFull/LogoMark use /logo.png — confirmed served, but no <link rel='preload'> in index.html so first paint of header may flash. Minor."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_studyos_v3.py"
+  ],
+  "success_rate": {
+    "backend": "100% (9/9)",
+    "frontend": "~90% (10/11 checks; SupportChat send blocked by overlay)"
+  },
+  "test_credentials": "demo@studyos.app / demo1234 (free user with 3 existing plans, 2 materials)",
+  "seed_data_creation": "No new seed data this iteration. Reused previous TEST_Chat_Material and TEST_Fotosintesi materials.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "All new backend endpoints (/me/limits, /support/chat, /support/chat/history, study-plan Free gate) are working. The 9-test pytest in /app/backend/tests/test_studyos_v3.py covers them; combine with test_studyos_extras.py (PayPal, push, notifications, material chat) and test_studyos.py for full regression. The single open frontend bug is SupportChat button being occluded by the Emergent badge — once main agent moves it (e.g. bottom-24 right-6), re-run the SupportChat send test to confirm the drawer opens, quick-chips render, and message send produces both user and assistant message bubbles. PayPal is LIVE — DO NOT click 'Completa' in the popup. Onboarding shows on first dashboard visit when localStorage 'studyos_onboarding_done' is unset; clear it to re-trigger.",
+  "rca of the issue": "SupportChat overlap RCA: SupportChat.jsx places the floating action button with classNames 'fixed bottom-6 right-6 ... z-30'. The injected 'Made with Emergent' badge (<a id='emergent-badge'>) is also fixed at the bottom-right corner with a higher effective stacking position, so it intercepts pointer events on the support button. Mitigation: change SupportChat button to 'fixed bottom-24 right-6' (or 'left-6') so the two elements no longer overlap. z-index alone won't help because the badge already sits visually on top; physical separation is required."
+}

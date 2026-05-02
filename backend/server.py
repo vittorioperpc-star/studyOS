@@ -641,6 +641,11 @@ class StudyPlanReq(BaseModel):
 
 @api_router.post("/study-plans")
 async def create_study_plan(req: StudyPlanReq, user: dict = Depends(get_current_user)):
+    # Free plan: max 1 active study plan
+    if user.get("plan") != "premium":
+        existing = await db.study_plans.count_documents({"user_id": user["user_id"]})
+        if existing >= 1:
+            raise HTTPException(status_code=402, detail="Piano Free: massimo 1 piano di studio. Passa a Premium per piani illimitati.")
     try:
         exam = datetime.fromisoformat(req.exam_date).date()
     except Exception:

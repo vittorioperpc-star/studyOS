@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { LogoMark } from "@/components/Logo";
 
 export default function Signup() {
   const { signup } = useAuth();
@@ -34,11 +35,10 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#FAFAF9]">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-slate-50 via-violet-50/30 to-blue-50/30">
       <div className="w-full max-w-sm">
-        <Link to="/" className="flex items-center gap-2 mb-10 justify-center">
-          <div className="h-8 w-8 rounded-md bg-black text-white grid place-items-center font-heading font-semibold">S</div>
-          <span className="font-heading font-semibold text-xl">StudyOS</span>
+        <Link to="/" className="flex justify-center mb-10">
+          <LogoMark size="lg" />
         </Link>
         <div className="border border-slate-200 bg-white rounded-xl p-7">
           <h1 className="font-heading text-2xl font-semibold">Crea il tuo account</h1>

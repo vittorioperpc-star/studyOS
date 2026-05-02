@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [mats, setMats] = useState([]);
   const [openUpload, setOpenUpload] = useState(false);
+  const [limits, setLimits] = useState(null);
 
   const load = async () => {
     try {
@@ -31,6 +32,10 @@ export default function Dashboard() {
       const m = await api.get("/materials");
       setMats(m.data);
     } catch (e) { setMats([]); }
+    try {
+      const l = await api.get("/me/limits");
+      setLimits(l.data);
+    } catch {}
   };
   useEffect(() => { load(); }, []);
 
@@ -53,6 +58,40 @@ export default function Dashboard() {
         <StatCard label="Media punteggio" value={stats ? `${stats.avg_score_pct}%` : "—"} />
         <StatCard label="Flashcard riviste" value={stats?.flashcards_reviewed ?? "—"} />
       </div>
+
+      {limits && limits.plan === "free" && (
+        <div className="border border-slate-200 rounded-xl bg-gradient-to-br from-violet-50 via-blue-50 to-fuchsia-50 p-5" data-testid="limits-card">
+          <div className="flex flex-wrap items-end justify-between gap-3 mb-4">
+            <div>
+              <div className="text-xs uppercase tracking-[0.18em] text-violet-700 font-semibold">Piano Free</div>
+              <div className="font-heading text-lg font-medium mt-1">Utilizzo di oggi</div>
+            </div>
+            <Link to="/pricing" className="text-xs px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-600 via-violet-600 to-fuchsia-600 text-white hover:opacity-90" data-testid="dashboard-upgrade">
+              Sblocca tutto →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              ["Upload", limits.limits.uploads],
+              ["AI Chat", limits.limits.chat_messages],
+              ["Piani studio", limits.limits.study_plans],
+            ].map(([k, v]) => {
+              const pct = v.max ? Math.min(100, (v.used / v.max) * 100) : 0;
+              return (
+                <div key={k} className="bg-white/70 backdrop-blur rounded-lg p-3 border border-white">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-600">{k}</span>
+                    <span className="font-medium text-slate-900">{v.used}/{v.max}</span>
+                  </div>
+                  <div className="mt-2 h-1.5 bg-slate-200/60 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all ${pct >= 100 ? "bg-red-500" : "bg-gradient-to-r from-blue-500 to-violet-600"}`} style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <section>
         <div className="flex items-center justify-between mb-4">

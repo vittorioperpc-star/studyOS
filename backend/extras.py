@@ -64,6 +64,17 @@ async def chat_with_material(material_id: str, body: ChatMsgReq, request: Reques
     if not mat:
         raise HTTPException(status_code=404, detail="Materiale non trovato")
 
+    # Free plan: 10 chat msg/day across all materials
+    if user.get("plan") != "premium":
+        today = datetime.now(timezone.utc).date().isoformat()
+        cnt = await db.chat_messages.count_documents({
+            "user_id": user["user_id"],
+            "role": "user",
+            "created_at": {"$gte": today + "T00:00:00+00:00", "$lt": today + "T23:59:59+00:00"},
+        })
+        if cnt >= 10:
+            raise HTTPException(status_code=402, detail="Limite Free raggiunto: 10 messaggi chat al giorno. Passa a Premium per chat illimitate.")
+
     # Get last 8 messages for context
     history = await db.chat_messages.find(
         {"user_id": user["user_id"], "material_id": material_id},
@@ -109,6 +120,82 @@ async def chat_history(material_id: str, request: Request):
         {"_id": 0},
     ).sort("created_at", 1).to_list(200)
     return msgs
+
+
+# ------------------------- Support chat (general AI assistant) -------------------------
+SUPPORT_KB = """Sei l'assistente ufficiale di StudyOS, un SaaS italiano per studenti.
+Funzioni principali (descrivi solo se chieste):
+- Upload materiali: PDF, foto degli appunti (OCR), o testo. Limite Free: 3 al giorno. Premium: illimitato.
+- Generazione automatica di Riassunto, Schema, Flashcard (SM-2), Quiz, Domande d'esame.
+- AI Chat per ogni materiale: chiedi domande sul contenuto. Premium: illimitata. Free: 10 messaggi/giorno.
+- Piano di studio automatico: data esame + pagine -> calendario. Free: 1 piano. Premium: illimitati.
+- Notifiche in-app e push (web push) per ricordare di studiare.
+- Stats: tracking quiz, flashcard, attivita ultimi 7 giorni.
+- Premium 4.99 EUR / 30 giorni via PayPal: sblocca tutto.
+Tono: cordiale, conciso, in italiano. Se la domanda e fuori scope, rispondi gentilmente che sei l'assistente del prodotto."""
+
+
+@extras_router.post("/support/chat")
+async def support_chat(body: ChatMsgReq, request: Request):
+    db, get_current_user, llm_chat = _get_deps()
+    user = await get_current_user(request, request.headers.get("authorization"))
+    history = await db.support_messages.find(
+        {"user_id": user["user_id"]}, {"_id": 0}
+    ).sort("created_at", -1).to_list(8)
+    history.reverse()
+    history_text = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in history])
+    prompt = f"""# CONVERSAZIONE PRECEDENTE
+{history_text or '(nessuna)'}
+
+# DOMANDA UTENTE
+{body.message}
+
+Rispondi in italiano, max 4 frasi salvo richiesta esplicita di dettaglio."""
+    reply = await llm_chat(SUPPORT_KB, prompt)
+    now = datetime.now(timezone.utc).isoformat()
+    await db.support_messages.insert_many([
+        {"id": str(uuid.uuid4()), "user_id": user["user_id"], "role": "user", "content": body.message, "created_at": now},
+        {"id": str(uuid.uuid4()), "user_id": user["user_id"], "role": "assistant", "content": reply, "created_at": now},
+    ])
+    return {"reply": reply}
+
+
+@extras_router.get("/support/chat/history")
+async def support_chat_history(request: Request):
+    db, get_current_user, _ = _get_deps()
+    user = await get_current_user(request, request.headers.get("authorization"))
+    msgs = await db.support_messages.find(
+        {"user_id": user["user_id"]}, {"_id": 0}
+    ).sort("created_at", 1).to_list(200)
+    return msgs
+
+
+# ------------------------- Plan limits / status -------------------------
+@extras_router.get("/me/limits")
+async def get_limits(request: Request):
+    db, get_current_user, _ = _get_deps()
+    user = await get_current_user(request, request.headers.get("authorization"))
+    plan = user.get("plan", "free")
+    today = datetime.now(timezone.utc).date().isoformat()
+    uploads_today = await db.materials.count_documents({
+        "user_id": user["user_id"],
+        "created_at": {"$gte": today + "T00:00:00+00:00", "$lt": today + "T23:59:59+00:00"},
+    })
+    chat_today = await db.chat_messages.count_documents({
+        "user_id": user["user_id"],
+        "role": "user",
+        "created_at": {"$gte": today + "T00:00:00+00:00", "$lt": today + "T23:59:59+00:00"},
+    })
+    plans_active = await db.study_plans.count_documents({"user_id": user["user_id"]})
+    return {
+        "plan": plan,
+        "limits": {
+            "uploads": {"used": uploads_today, "max": 3 if plan == "free" else None},
+            "chat_messages": {"used": chat_today, "max": 10 if plan == "free" else None},
+            "study_plans": {"used": plans_active, "max": 1 if plan == "free" else None},
+        },
+    }
+
 
 
 # ------------------------- Notifications -------------------------

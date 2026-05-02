@@ -6,20 +6,22 @@ import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { LogoMark } from "@/components/Logo";
 
 const features_free = [
   "3 upload al giorno",
-  "Riassunti, schemi e flashcard",
-  "Quiz base",
+  "Riassunti, schemi e flashcard illimitati",
+  "Quiz interattivi con spiegazioni",
   "1 piano di studio attivo",
+  "10 messaggi AI chat al giorno",
 ];
 const features_premium = [
   "Upload illimitati",
-  "Quiz avanzati + spiegazioni",
   "Piani di studio illimitati",
   "AI Chat illimitate sui materiali",
   "Notifiche push promemoria",
-  "Tracking progresso completo",
+  "Priorità nelle code AI",
+  "Supporto prioritario",
 ];
 
 function PayPalCheckout({ price, onSuccess }) {
@@ -78,9 +80,8 @@ export default function Pricing() {
     <div className="min-h-screen bg-white">
       <header className="border-b border-slate-200">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-md bg-black text-white grid place-items-center font-heading font-semibold">S</div>
-            <span className="font-heading font-semibold text-lg">StudyOS</span>
+          <Link to="/" className="flex items-center">
+            <LogoMark size="sm" />
           </Link>
           <Link to={user ? "/dashboard" : "/login"} className="text-sm text-slate-600 hover:text-slate-900" data-testid="pricing-to-app">
             {user ? "Vai all'app" : "Accedi"}

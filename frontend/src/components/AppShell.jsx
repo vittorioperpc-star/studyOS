@@ -4,6 +4,9 @@ import { useAuth } from "@/lib/auth";
 import { BookOpen, LayoutGrid, Calendar, BarChart3, Sparkles, LogOut, Menu, X, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NotificationsBell from "@/components/NotificationsBell";
+import { LogoMark } from "@/components/Logo";
+import Onboarding from "@/components/Onboarding";
+import SupportChat from "@/components/SupportChat";
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutGrid },
@@ -22,10 +25,7 @@ export default function AppShell({ children }) {
   const SidebarInner = (
     <>
       <div className="px-3 pb-6">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-md bg-black text-white grid place-items-center font-heading font-semibold">S</div>
-          <span className="font-heading text-lg font-semibold tracking-tight">StudyOS</span>
-        </div>
+        <LogoMark size="md" />
       </div>
       <nav className="flex-1 space-y-0.5" data-testid="sidebar-nav">
         {nav.map((n) => (
@@ -78,10 +78,7 @@ export default function AppShell({ children }) {
 
       {/* Mobile header */}
       <div className="md:hidden sticky top-0 z-40 flex items-center justify-between px-4 h-14 border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-md bg-black text-white grid place-items-center font-heading text-sm font-semibold">S</div>
-          <span className="font-heading font-semibold">StudyOS</span>
-        </div>
+        <LogoMark size="sm" />
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon" onClick={() => setOpen(true)} data-testid="open-mobile-menu">
             <Menu className="h-5 w-5" />
@@ -107,6 +104,8 @@ export default function AppShell({ children }) {
           {children}
         </div>
       </main>
+      <Onboarding />
+      <SupportChat />
     </div>
   );
 }
