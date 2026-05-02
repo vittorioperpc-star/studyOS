@@ -1,0 +1,29 @@
+name: Deploy Frontend to GitHub Pages
+
+on:
+  push:
+    branches: [ main ] # Sostituisci con il nome del tuo ramo se diverso
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install and Build
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: frontend/build # La cartella generata da Emergent/React
+          branch: gh-pages # Il ramo dove verrà pubblicato il sito
