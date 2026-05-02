@@ -86,6 +86,7 @@ class User(BaseModel):
     name: str
     picture: Optional[str] = None
     plan: str = "free"  # free | premium
+    premium_until: Optional[str] = None
     created_at: str
 
 
@@ -407,9 +408,26 @@ async def auth_session(payload: Dict[str, str], response: Response):
     return {"token": session_token, "user": user}
 
 
+async def _refresh_plan(user: dict) -> dict:
+    """Downgrade to free if premium_until expired."""
+    pu = user.get("premium_until")
+    if user.get("plan") == "premium" and pu:
+        try:
+            until = datetime.fromisoformat(pu)
+            if until.tzinfo is None:
+                until = until.replace(tzinfo=timezone.utc)
+            if until < datetime.now(timezone.utc):
+                await db.users.update_one({"user_id": user["user_id"]}, {"$set": {"plan": "free"}})
+                user["plan"] = "free"
+        except Exception:
+            pass
+    return user
+
+
 @api_router.get("/auth/me", response_model=User)
 async def get_me(user: dict = Depends(get_current_user)):
     user.pop("password_hash", None)
+    user = await _refresh_plan(user)
     return User(**user)
 
 
@@ -728,22 +746,17 @@ async def stats_overview(user: dict = Depends(get_current_user)):
     }
 
 
-# ------------------------- Billing (MOCKED) -------------------------
-@api_router.post("/billing/upgrade")
-async def upgrade_premium(user: dict = Depends(get_current_user)):
-    """MOCKED: In production integrate Stripe Checkout. For now toggles user plan."""
-    await db.users.update_one({"user_id": user["user_id"]}, {"$set": {"plan": "premium"}})
-    return {"ok": True, "plan": "premium", "mocked": True}
-
-
+# ------------------------- Billing (legacy mock kept for downgrade) -------------------------
 @api_router.post("/billing/downgrade")
 async def downgrade_free(user: dict = Depends(get_current_user)):
-    await db.users.update_one({"user_id": user["user_id"]}, {"$set": {"plan": "free"}})
+    await db.users.update_one({"user_id": user["user_id"]}, {"$set": {"plan": "free", "premium_until": None}})
     return {"ok": True, "plan": "free"}
 
 
 # ------------------------- Setup -------------------------
 app.include_router(api_router)
+from extras import extras_router  # noqa: E402
+app.include_router(extras_router)
 
 app.add_middleware(
     CORSMiddleware,

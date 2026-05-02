@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, RotateCw, Check, X } from "lucide-react";
 import { toast } from "sonner";
+import MaterialChat from "@/components/MaterialChat";
 
 function MDLite({ text }) {
   // very light markdown-like renderer
@@ -188,6 +189,7 @@ export default function MaterialView() {
           </ol>
         </TabsContent>
       </Tabs>
+      <MaterialChat materialId={mat.id} />
     </div>
   );
 }

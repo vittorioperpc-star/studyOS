@@ -1,0 +1,32 @@
+{
+  "summary": "Tested all 3 new StudyOS features: AI chat (Claude 4.5), notifications (in-app + push), PayPal LIVE billing at €4.99. Backend: 14/14 pytest passed in 38s (auth/me.premium_until, notifications CRUD + idempotency, VAPID pubkey, push subscribe valid+invalid, billing config, PayPal create-order returns real order_id from LIVE api-m.paypal.com, capture of unapproved order returns 502 as expected, chat send persists user+assistant turns, chat history chronological, chat 404 on unknown material). LLM budget appears replenished — chat test succeeded (not skipped). Frontend: /sw.js served (200, push handler present), /pricing logged-out shows €4.99 + signup CTA, /pricing logged-in renders PayPal vertical buttons (PayPal + Debit/Credit Card iframe from paypal.com), NotificationsBell popover opens with 'Nessuna notifica.' empty state + 'Attiva notifiche push' button, MaterialView has floating 'Chiedi all'AI' button (open-chat-btn present).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Global (logged-out pages)", "issues": ["401 errors in console on /pricing logged-out — likely /auth/me probe from AppShell/AuthContext firing without token. Cosmetic only; consider skipping when no token present."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_studyos_extras.py", "/app/test_reports/pytest/extras_results.xml"],
+  "action_items": [
+    "Optional: prevent AuthContext from calling /auth/me when no token exists to silence 401 console noise on public pages.",
+    "Optional: duplicate notifications-bell elements (desktop + mobile copies both rendered) — fine functionally since only one is visible per breakpoint, but adds DOM. Consider single component with responsive classes."
+  ],
+  "critical_code_review_comments": [
+    "extras.py:chat_with_material streams entire raw_text[:8000] into prompt every turn — fine now, but for large materials consider summarising context once and reusing.",
+    "PayPal secret is committed in /app/backend/.env (LIVE credentials). Must be moved to a secrets manager before production deploy.",
+    "capture_paypal_order has no webhook/idempotency guard — if called twice for the same order_id it could double-extend premium_until. Consider checking db.payments for order_id before crediting.",
+    "get_vapid_keys() writes .vapid_keys.json next to extras.py — persistent only if the container FS survives. Should be stored in env vars or DB for multi-replica deploys.",
+    "NotificationsBell renders identical bell twice (desktop+mobile) in DOM — both mount separate intervals calling /notifications every 60s, doubling traffic.",
+    "MaterialChat: frontend uses route /material/:id (singular) while tests/common convention would be /materials/:id (plural) — consistency suggestion."
+  ],
+  "updated_files": ["/app/backend/tests/test_studyos_extras.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "demo@studyos.app / demo1234 (validated)",
+  "seed_data_creation": "Created TEST_Chat_Material via POST /materials/text during chat tests; it's visible on demo dashboard. Also inserted a test push_subscriptions row with fake FCM endpoint.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "All 3 new features are green. PayPal is LIVE so DO NOT actually click 'Completa' in the PayPal popup. Route for material detail is /material/:id (singular). Notification popover uses Radix portal — query with plain body scope, not within the bell's parent. To test chat send in UI, navigate to /material/{id} via clicking the card on /dashboard (library card links to singular route too). Emergent LLM budget is currently OK — chat endpoint returned 200 during this run.",
+  "rca of the issue": "N/A — no issues found."
+}

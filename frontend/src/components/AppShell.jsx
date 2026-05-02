@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { BookOpen, LayoutGrid, Calendar, BarChart3, Sparkles, LogOut, Menu, X, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import NotificationsBell from "@/components/NotificationsBell";
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutGrid },
@@ -81,9 +82,12 @@ export default function AppShell({ children }) {
           <div className="h-7 w-7 rounded-md bg-black text-white grid place-items-center font-heading text-sm font-semibold">S</div>
           <span className="font-heading font-semibold">StudyOS</span>
         </div>
-        <Button variant="ghost" size="icon" onClick={() => setOpen(true)} data-testid="open-mobile-menu">
-          <Menu className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <NotificationsBell />
+          <Button variant="ghost" size="icon" onClick={() => setOpen(true)} data-testid="open-mobile-menu">
+            <Menu className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
       {open && (
         <div className="md:hidden fixed inset-0 z-50 bg-white flex flex-col p-4">
@@ -97,6 +101,9 @@ export default function AppShell({ children }) {
       )}
 
       <main className="md:pl-64 min-h-screen">
+        <div className="hidden md:flex items-center justify-end gap-2 sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-200/60 h-12 px-8">
+          <NotificationsBell />
+        </div>
         <div className="max-w-6xl mx-auto px-5 md:px-10 py-8 md:py-12 fade-in">
           {children}
         </div>

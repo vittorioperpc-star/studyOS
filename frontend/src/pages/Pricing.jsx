@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check, Crown } from "lucide-react";
+import { Check, Crown, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
 const features_free = [
   "3 upload al giorno",
@@ -16,23 +17,62 @@ const features_premium = [
   "Upload illimitati",
   "Quiz avanzati + spiegazioni",
   "Piani di studio illimitati",
+  "AI Chat illimitate sui materiali",
+  "Notifiche push promemoria",
   "Tracking progresso completo",
-  "Priorità nelle code AI",
 ];
+
+function PayPalCheckout({ price, onSuccess }) {
+  const [cfg, setCfg] = useState(null);
+  useEffect(() => { api.get("/billing/config").then((r) => setCfg(r.data)); }, []);
+
+  if (!cfg?.client_id) {
+    return <div className="text-xs text-slate-400 text-center py-2">Caricamento PayPal…</div>;
+  }
+
+  return (
+    <PayPalScriptProvider options={{ "client-id": cfg.client_id, currency: "EUR", intent: "capture" }}>
+      <PayPalButtons
+        style={{ layout: "vertical", color: "black", shape: "rect", label: "paypal" }}
+        createOrder={async () => {
+          try {
+            const { data } = await api.post("/billing/paypal/create-order");
+            return data.order_id;
+          } catch (e) {
+            toast.error("Errore nella creazione ordine PayPal");
+            throw e;
+          }
+        }}
+        onApprove={async (data) => {
+          try {
+            const { data: res } = await api.post(`/billing/paypal/capture/${data.orderID}`);
+            toast.success("Pagamento completato — Premium attivato 🎉");
+            onSuccess?.(res);
+          } catch (e) {
+            toast.error(e.response?.data?.detail || "Errore nel pagamento");
+          }
+        }}
+        onError={(err) => { console.error(err); toast.error("Errore PayPal"); }}
+      />
+    </PayPalScriptProvider>
+  );
+}
 
 export default function Pricing() {
   const { user, refresh } = useAuth();
   const nav = useNavigate();
+  const [price, setPrice] = useState("4.99");
 
-  const upgrade = async () => {
-    if (!user) return nav("/signup");
-    try {
-      await api.post("/billing/upgrade");
-      await refresh();
-      toast.success("Benvenuto in Premium! 🎉");
-      nav("/dashboard");
-    } catch { toast.error("Errore"); }
+  useEffect(() => {
+    api.get("/billing/config").then((r) => setPrice(r.data.price)).catch(() => {});
+  }, []);
+
+  const onPaid = async () => {
+    await refresh();
+    setTimeout(() => nav("/dashboard"), 1500);
   };
+
+  const isPremium = user?.plan === "premium";
 
   return (
     <div className="min-h-screen bg-white">
@@ -82,19 +122,30 @@ export default function Pricing() {
               <Crown className="h-4 w-4" />
             </div>
             <div className="mt-3 flex items-baseline gap-1.5">
-              <span className="font-heading text-5xl font-semibold">€9</span>
-              <span className="text-slate-500 text-sm">/ mese</span>
+              <span className="font-heading text-5xl font-semibold">€{price}</span>
+              <span className="text-slate-500 text-sm">/ 30 giorni</span>
             </div>
-            <p className="text-sm text-slate-600 mt-3">Illimitato, tutto sbloccato.</p>
+            <p className="text-sm text-slate-600 mt-3">Tutto sbloccato per un mese.</p>
             <ul className="mt-6 space-y-2.5 text-sm">
               {features_premium.map((f) => (
                 <li key={f} className="flex items-start gap-2"><Check className="h-4 w-4 mt-0.5 text-slate-900" />{f}</li>
               ))}
             </ul>
-            <Button onClick={upgrade} className="w-full mt-8 h-11 bg-black hover:bg-black/90" data-testid="pricing-upgrade-btn">
-              {user?.plan === "premium" ? "Già Premium ✓" : "Passa a Premium"}
-            </Button>
-            <p className="text-[11px] text-slate-400 mt-3 text-center">Attivazione istantanea — pagamento Stripe in arrivo.</p>
+
+            <div className="mt-8" data-testid="paypal-button-wrap">
+              {!user ? (
+                <Button onClick={() => nav("/signup")} className="w-full h-11 bg-black hover:bg-black/90" data-testid="pricing-cta-signup">
+                  Crea account per acquistare
+                </Button>
+              ) : isPremium ? (
+                <Button disabled className="w-full h-11 bg-slate-100 text-slate-700" data-testid="pricing-already-premium">
+                  Già Premium ✓ {user?.premium_until ? `— fino al ${new Date(user.premium_until).toLocaleDateString("it-IT")}` : ""}
+                </Button>
+              ) : (
+                <PayPalCheckout price={price} onSuccess={onPaid} />
+              )}
+            </div>
+            <p className="text-[11px] text-slate-400 mt-3 text-center">Pagamento sicuro tramite PayPal · Nessun rinnovo automatico</p>
           </div>
         </div>
       </section>
